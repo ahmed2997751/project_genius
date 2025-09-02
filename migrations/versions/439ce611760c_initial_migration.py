@@ -379,7 +379,7 @@ def upgrade():
                existing_type=sa.VARCHAR(length=256),
                type_=sa.String(length=128),
                existing_nullable=False)
-        batch_op.create_unique_constraint(None, ['api_key'])
+        batch_op.create_unique_constraint('uq_users_api_key', ['api_key'])
         batch_op.drop_column('subscription_end_date')
         batch_op.drop_column('is_premium')
 
@@ -391,7 +391,7 @@ def downgrade():
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.add_column(sa.Column('is_premium', sa.BOOLEAN(), autoincrement=False, nullable=False))
         batch_op.add_column(sa.Column('subscription_end_date', postgresql.TIMESTAMP(), autoincrement=False, nullable=True))
-        batch_op.drop_constraint(None, type_='unique')
+        batch_op.drop_constraint('uq_users_api_key', type_='unique')
         batch_op.alter_column('password_hash',
                existing_type=sa.String(length=128),
                type_=sa.VARCHAR(length=256),
