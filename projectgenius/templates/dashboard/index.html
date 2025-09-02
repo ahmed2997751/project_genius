@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ProjectGenius{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="mb-2">Welcome back, {{ current_user.full_name or current_user.username }}!</h1>
+                            <p class="mb-0">Continue your learning journey and track your progress.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex align-items-center justify-content-end">
+                                {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="Profile"
+                                     class="rounded-circle me-3" width="80" height="80">
+                                {% else %}
+                                <div class="bg-white bg-opacity-25 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                     style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user text-white fa-2x"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-open fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ stats.enrolled_courses }}</h3>
+                    <p class="text-muted mb-0">Enrolled Courses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ stats.completed_courses }}</h3>
+                    <p class="text-muted mb-0">Completed Courses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ stats.assignments_completed }}</h3>
+                    <p class="text-muted mb-0">Assignments Done</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-medal fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ stats.achievements_earned }}</h3>
+                    <p class="text-muted mb-0">Achievements</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Recent Activity -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h5>
+                    <a href="{{ url_for('dashboard.activity') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                    <div class="timeline">
+                        {% for activity in recent_activities[:5] %}
+                        <div class="timeline-item d-flex mb-3">
+                            <div class="timeline-marker bg-{{ activity.type_color }} rounded-circle me-3 mt-1"
+                                 style="width: 10px; height: 10px; min-width: 10px;"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="mb-1">{{ activity.description }}</p>
+                                        <small class="text-muted">{{ activity.created_at | timeago }}</small>
+                                    </div>
+                                    {% if activity.course %}
+                                    <span class="badge bg-light text-dark">{{ activity.course.title }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No recent activity. Start learning to see your progress here!
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Current Courses -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>My Courses
+                    </h5>
+                    <a href="{{ url_for('courses.browse') }}" class="btn btn-sm btn-outline-primary">
+                        Browse More
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if enrolled_courses %}
+                    <div class="row">
+                        {% for enrollment in enrolled_courses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                {% if enrollment.course.cover_image %}
+                                <img src="{{ enrollment.course.cover_image }}"
+                                     class="card-img-top" alt="{{ enrollment.course.title }}"
+                                     style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-gradient-primary d-flex align-items-center justify-content-center"
+                                     style="height: 150px;">
+                                    <i class="fas fa-book text-white fa-3x"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ enrollment.course.title }}</h6>
+                                    <p class="card-text small text-muted">
+                                        {{ enrollment.course.description[:100] }}...
+                                    </p>
+
+                                    <!-- Progress Bar -->
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="text-muted">{{ enrollment.progress }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                 style="width: {{ enrollment.progress }}%"
+                                                 aria-valuenow="{{ enrollment.progress }}"
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ enrollment.course.instructor.full_name or enrollment.course.instructor.username }}
+                                        </small>
+                                        <a href="{{ url_for('courses.overview', course_id=enrollment.course.id) }}"
+                                           class="btn btn-sm btn-primary">Continue</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Courses Yet</h5>
+                        <p class="text-muted mb-3">Start your learning journey by enrolling in a course.</p>
+                        <a href="{{ url_for('courses.browse') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Browse Courses
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Upcoming Deadlines -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Upcoming Deadlines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_deadlines %}
+                    {% for deadline in upcoming_deadlines %}
+                    <div class="deadline-item d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}">
+                        <div>
+                            <h6 class="mb-1">{{ deadline.title }}</h6>
+                            <small class="text-muted">{{ deadline.course.title }}</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="badge bg-{% if deadline.days_left <= 1 %}danger{% elif deadline.days_left <= 3 %}warning{% else %}info{% endif %}">
+                                {% if deadline.days_left == 0 %}
+                                Today
+                                {% elif deadline.days_left == 1 %}
+                                Tomorrow
+                                {% else %}
+                                {{ deadline.days_left }} days
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        No upcoming deadlines
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('courses.browse') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Browse Courses
+                        </a>
+                        <a href="{{ url_for('dashboard.assignments') }}" class="btn btn-outline-success">
+                            <i class="fas fa-tasks me-2"></i>View Assignments
+                        </a>
+                        <a href="{{ url_for('dashboard.quizzes') }}" class="btn btn-outline-info">
+                            <i class="fas fa-question-circle me-2"></i>Take Quizzes
+                        </a>
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-cog me-2"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            {% if recent_achievements %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy me-2"></i>Recent Achievements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for achievement in recent_achievements %}
+                    <div class="achievement-item d-flex align-items-center {% if not loop.last %}mb-3{% endif %}">
+                        {% if achievement.badge_url %}
+                        <img src="{{ achievement.badge_url }}" alt="{{ achievement.name }}"
+                             class="me-3" width="40" height="40">
+                        {% else %}
+                        <div class="bg-warning rounded-circle me-3 d-flex align-items-center justify-content-center"
+                             style="width: 40px; height: 40px;">
+                            <i class="fas fa-trophy text-white"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-1">{{ achievement.name }}</h6>
+                            <small class="text-muted">{{ achievement.description }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('dashboard.achievements') }}" class="btn btn-sm btn-outline-warning mt-2">
+                        View All Achievements
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Modal for New Users -->
+{% if is_new_user %}
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h4 class="modal-title">Welcome to ProjectGenius!</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-graduation-cap fa-4x text-primary mb-3"></i>
+                <h5 class="mb-3">Ready to start your learning journey?</h5>
+                <p class="text-muted mb-4">
+                    Explore our comprehensive courses, take quizzes, complete assignments,
+                    and earn achievements as you progress through your learning path.
+                </p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="feature-item mb-3">
+                            <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                            <h6>Interactive Courses</h6>
+                            <small class="text-muted">Learn with engaging content</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-item mb-3">
+                            <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                            <h6>Track Progress</h6>
+                            <small class="text-muted">Monitor your learning</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-item mb-3">
+                            <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                            <h6>Earn Achievements</h6>
+                            <small class="text-muted">Get recognized for success</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    I'll explore later
+                </button>
+                <a href="{{ url_for('courses.browse') }}" class="btn btn-primary">
+                    Browse Courses Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show welcome modal for new users
+    {% if is_new_user %}
+    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+    welcomeModal.show();
+    {% endif %}
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Animate progress bars
+    setTimeout(() => {
+        document.querySelectorAll('.progress-bar').forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-in-out';
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 500);
+
+    // Auto-refresh activity feed every 5 minutes
+    setInterval(() => {
+        fetch('/api/v1/users/activity?limit=5')
+            .then(response => response.json())
+            .then(data => {
+                // Update activity feed if new activities
+                console.log('Activity refreshed');
+            })
+            .catch(error => console.error('Error refreshing activity:', error));
+    }, 300000); // 5 minutes
+});
+</script>
+{% endblock %}

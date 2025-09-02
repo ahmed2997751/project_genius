@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Register - ProjectGenius{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.register') }}" id="registrationForm">
+                        {{ form.csrf_token }}
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            {{ form.username(class="form-control", placeholder="Choose a username") }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Username can contain letters, numbers, dots, and dashes.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            {{ form.email(class="form-control", placeholder="Enter your email address", type="email") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            {{ form.full_name(class="form-control", placeholder="Enter your full name") }}
+                            {% if form.full_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.full_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password(class="form-control", placeholder="Choose a strong password") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="password-strength mt-2" id="passwordStrength">
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted">Password must contain at least:</small>
+                                <ul class="password-requirements list-unstyled small text-muted">
+                                    <li id="length"><i class="fas fa-times-circle text-danger"></i> 8 characters</li>
+                                    <li id="uppercase"><i class="fas fa-times-circle text-danger"></i> One uppercase letter</li>
+                                    <li id="lowercase"><i class="fas fa-times-circle text-danger"></i> One lowercase letter</li>
+                                    <li id="number"><i class="fas fa-times-circle text-danger"></i> One number</li>
+                                    <li id="special"><i class="fas fa-times-circle text-danger"></i> One special character</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.confirm_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="registerButton" disabled>
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account?
+                            <a href="{{ url_for('auth.login') }}" class="text-primary">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('confirm_password');
+    const registerButton = document.getElementById('registerButton');
+    const form = document.getElementById('registrationForm');
+
+    function validatePassword(password) {
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*()_+]/.test(password)
+        };
+
+        // Update requirement indicators
+        for (const [req, met] of Object.entries(requirements)) {
+            const element = document.getElementById(req);
+            const icon = element.querySelector('i');
+            icon.className = met ? 'fas fa-check-circle text-success' : 'fas fa-times-circle text-danger';
+        }
+
+        // Calculate strength
+        const strength = Object.values(requirements).filter(Boolean).length;
+        const progressBar = document.querySelector('#passwordStrength .progress-bar');
+        progressBar.style.width = `${strength * 20}%`;
+        progressBar.className = `progress-bar bg-${strength < 3 ? 'danger' : strength < 5 ? 'warning' : 'success'}`;
+
+        return Object.values(requirements).every(Boolean);
+    }
+
+    function updateRegisterButton() {
+        const allFieldsFilled = [
+            'username',
+            'email',
+            'full_name',
+            'password',
+            'confirm_password'
+        ].every(id => document.getElementById(id).value.trim() !== '');
+
+        const passwordsMatch = passwordField.value === confirmPasswordField.value;
+        const passwordValid = validatePassword(passwordField.value);
+
+        registerButton.disabled = !(allFieldsFilled && passwordsMatch && passwordValid);
+    }
+
+    // Add password visibility toggles
+    [passwordField, confirmPasswordField].forEach(field => {
+        const togglePassword = document.createElement('button');
+        togglePassword.type = 'button';
+        togglePassword.className = 'btn btn-outline-secondary position-absolute end-0 top-50 translate-middle-y';
+        togglePassword.innerHTML = '<i class="fas fa-eye"></i>';
+        togglePassword.style.right = '10px';
+        togglePassword.onclick = function() {
+            const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        };
+
+        field.parentElement.style.position = 'relative';
+        field.parentElement.appendChild(togglePassword);
+    });
+
+    // Add event listeners
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', updateRegisterButton);
+    });
+
+    // Initial button state check
+    updateRegisterButton();
+});
+</script>
+{% endblock %}

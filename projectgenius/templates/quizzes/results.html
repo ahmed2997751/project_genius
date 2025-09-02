@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('core.dashboard') }}">Dashboard</a></li>
+                    {% if quiz.lesson %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('courses.overview', course_id=quiz.lesson.module.course.id) }}">{{ quiz.lesson.module.course.title }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('courses.lesson', course_id=quiz.lesson.module.course.id, lesson_id=quiz.lesson.id) }}">{{ quiz.lesson.title }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('quizzes.list') }}">Quizzes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Results</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">{{ quiz.title }} - Results</h1>
+                    <p class="text-muted mb-0">Completed on {{ attempt.completed_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex justify-content-md-end">
+                        {% if attempt.is_passing %}
+                        <div class="badge bg-success fs-5 p-2">
+                            <i class="fas fa-trophy me-2"></i>Passed
+                        </div>
+                        {% else %}
+                        <div class="badge bg-danger fs-5 p-2">
+                            <i class="fas fa-times-circle me-2"></i>Failed
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Summary -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Score Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="score-display">
+                                <div class="progress-circle mx-auto position-relative" style="width: 120px; height: 120px;">
+                                    <svg class="progress-ring" width="120" height="120">
+                                        <circle class="progress-ring-circle-bg" stroke="#e9ecef" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                                        <circle class="progress-ring-circle"
+                                                stroke="{% if attempt.is_passing %}#28a745{% else %}#dc3545{% endif %}"
+                                                stroke-width="8"
+                                                fill="transparent"
+                                                r="52"
+                                                cx="60"
+                                                cy="60"
+                                                stroke-dasharray="326.7256"
+                                                stroke-dashoffset="{{ 326.7256 - (326.7256 * attempt.score / 100) }}"/>
+                                    </svg>
+                                    <div class="position-absolute top-50 start-50 translate-middle">
+                                        <h2 class="mb-0">{{ "%.1f"|format(attempt.score) }}%</h2>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2">Your Score</p>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex flex-column h-100 justify-content-center">
+                                <div class="score-details">
+                                    <div class="row mb-2">
+                                        <div class="col-8">Time Taken:</div>
+                                        <div class="col-4 text-end fw-bold">
+                                            {% if attempt.time_taken %}
+                                                {% set minutes = (attempt.time_taken / 60)|int %}
+                                                {% set seconds = attempt.time_taken % 60 %}
+                                                {{ minutes }}m {{ seconds }}s
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-8">Passing Score:</div>
+                                        <div class="col-4 text-end fw-bold">{{ quiz.passing_score }}%</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-8">Correct Answers:</div>
+                                        <div class="col-4 text-end fw-bold">
+                                            {{ correct_count }}/{{ responses|length }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-8">Attempt:</div>
+                                        <div class="col-4 text-end fw-bold">#{{ attempt.attempt_number }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if can_review %}
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#answerReview" aria-expanded="false" aria-controls="answerReview">
+                            <i class="fas fa-search me-2"></i>Review Answers
+                        </button>
+                        {% endif %}
+
+                        {% if can_retake %}
+                        <a href="{{ url_for('quizzes.start', quiz_id=quiz.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-redo me-2"></i>Retake Quiz
+                        </a>
+                        {% endif %}
+
+                        {% if quiz.lesson %}
+                        <a href="{{ url_for('courses.lesson', course_id=quiz.lesson.module.course.id, lesson_id=quiz.lesson.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Lesson
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('quizzes.list') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>All Quizzes
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answer Review -->
+    <div class="collapse" id="answerReview">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Review Your Answers</h5>
+            </div>
+            <div class="card-body">
+                {% for response in responses %}
+                <div class="question-review mb-4 {% if not loop.last %}border-bottom pb-4{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5>Question {{ loop.index }}</h5>
+                        <span class="badge {% if response.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                            {% if response.is_correct %}
+                            <i class="fas fa-check me-1"></i>Correct
+                            {% else %}
+                            <i class="fas fa-times me-1"></i>Incorrect
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <p class="fw-bold">{{ response.question.content }}</p>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="your-answer p-3 rounded {% if response.is_correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                                <p class="mb-1 small text-muted">Your Answer:</p>
+                                {% if response.question.question_type == 'multiple_choice' %}
+                                <p class="mb-0">{{ response.response }}</p>
+                                {% elif response.question.question_type == 'true_false' %}
+                                <p class="mb-0">{{ response.response|title }}</p>
+                                {% elif response.question.question_type == 'essay' %}
+                                <p class="mb-0">{{ response.response|nl2br }}</p>
+                                {% elif response.question.question_type == 'coding' %}
+                                <pre class="mb-0 bg-dark text-light p-2 rounded"><code>{{ response.response }}</code></pre>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if quiz.show_correct_answers or response.is_correct %}
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <div class="correct-answer p-3 rounded bg-success bg-opacity-10">
+                                <p class="mb-1 small text-muted">Correct Answer:</p>
+                                {% if response.question.question_type == 'multiple_choice' %}
+                                <p class="mb-0">{{ response.question.correct_answer }}</p>
+                                {% elif response.question.question_type == 'true_false' %}
+                                <p class="mb-0">{{ response.question.correct_answer|title }}</p>
+                                {% elif response.question.question_type == 'essay' %}
+                                <p class="mb-0"><em>Graded manually</em></p>
+                                {% elif response.question.question_type == 'coding' %}
+                                <p class="mb-0"><em>Check test cases</em></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if response.feedback %}
+                    <div class="feedback mt-3">
+                        <p class="mb-1 small text-muted">Feedback:</p>
+                        <div class="p-3 bg-light rounded">
+                            {{ response.feedback|nl2br }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if response.question.explanation and (quiz.show_correct_answers or response.is_correct) %}
+                    <div class="explanation mt-3">
+                        <p class="mb-1 small text-muted">Explanation:</p>
+                        <div class="p-3 bg-light rounded">
+                            {{ response.question.explanation|nl2br }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Earned (if applicable) -->
+    {% if achievement_earned %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="achievement-icon me-3">
+                    {% if achievement_earned.badge_url %}
+                    <img src="{{ achievement_earned.badge_url }}" alt="Achievement" width="80" height="80">
+                    {% else %}
+                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-trophy text-white fa-2x"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <h4 class="text-primary mb-1">Achievement Unlocked!</h4>
+                    <h5 class="mb-2">{{ achievement_earned.name }}</h5>
+                    <p class="text-muted mb-0">{{ achievement_earned.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate the score circle
+    setTimeout(() => {
+        const circles = document.querySelectorAll('.progress-ring-circle');
+        circles.forEach(circle => {
+            circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+        });
+    }, 300);
+});
+</script>
+
+<style>
+.progress-ring-circle-bg {
+    stroke-dasharray: 326.7256;
+}
+
+.progress-ring-circle {
+    transform-origin: center;
+    transform: rotate(-90deg);
+    transition: stroke-dashoffset 0s;
+}
+
+@media (max-width: 768px) {
+    .score-display {
+        margin-bottom: 20px;
+    }
+}
+</style>
+{% endblock %}

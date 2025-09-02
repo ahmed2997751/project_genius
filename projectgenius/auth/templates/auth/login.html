@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Login - ProjectGenius{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        {{ form.csrf_token }}
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            {{ form.username(class="form-control", placeholder="Enter your username") }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            <label class="form-check-label" for="remember_me">Remember me</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account?
+                            <a href="{{ url_for('auth.register') }}" class="text-primary">Register here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus username field on page load
+    document.getElementById('username').focus();
+
+    // Add password visibility toggle
+    const passwordField = document.getElementById('password');
+    const togglePassword = document.createElement('button');
+    togglePassword.type = 'button';
+    togglePassword.className = 'btn btn-outline-secondary position-absolute end-0 top-50 translate-middle-y';
+    togglePassword.innerHTML = '<i class="fas fa-eye"></i>';
+    togglePassword.style.right = '10px';
+    togglePassword.onclick = function() {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    };
+
+    // Add password visibility toggle to password field container
+    passwordField.parentElement.style.position = 'relative';
+    passwordField.parentElement.appendChild(togglePassword);
+});
+</script>
+{% endblock %}

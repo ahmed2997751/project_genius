@@ -1,0 +1,461 @@
+{% extends "base.html" %} {% block title %}Analytics Dashboard - EduSense{%
+endblock %} {% block extra_head %}
+<!-- Chart.js for analytics charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %} {% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i class="fas fa-chart-bar text-primary me-3"></i>
+                        Analytics Dashboard
+                    </h1>
+                    <p class="text-muted">
+                        Track your learning progress and study insights
+                    </p>
+                </div>
+                <div>
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="fas fa-crown me-1"></i>Premium Feature
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">
+                                {{ stats.total_cards_studied }}
+                            </h3>
+                            <p class="card-text">Total Cards Studied</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clone fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">
+                                {{ stats.total_correct }}
+                            </h3>
+                            <p class="card-text">Correct Answers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">{{ stats.accuracy }}%</h3>
+                            <p class="card-text">Overall Accuracy</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bullseye fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title">
+                                {{ stats.total_study_time }}
+                            </h3>
+                            <p class="card-text">Minutes Studied</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Study Progress
+                        Over Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Accuracy Rate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="accuracyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Performance by
+                        Subject
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="subjectChart" height="60"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Sessions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Study Sessions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analytics_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <i class="fas fa-calendar me-1"></i>Date
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-book me-1"></i>Subject
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-clone me-1"></i>Cards
+                                        Studied
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-check me-1"></i>Correct
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-percentage me-1"></i
+                                        >Accuracy
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-clock me-1"></i>Study
+                                        Time
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in analytics_data[:10] %}
+                                <tr>
+                                    <td>
+                                        {{
+                                        session.study_session_date.strftime('%b
+                                        %d, %Y') }}
+                                    </td>
+                                    <td>
+                                        {% if session.subject %}
+                                        <span class="badge bg-secondary"
+                                            >{{ session.subject }}</span
+                                        >
+                                        {% else %}
+                                        <span class="text-muted">General</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.cards_studied }}</td>
+                                    <td>{{ session.correct_answers }}</td>
+                                    <td>
+                                        {% set accuracy =
+                                        (session.correct_answers /
+                                        session.cards_studied * 100) if
+                                        session.cards_studied > 0 else 0 %}
+                                        <span
+                                            class="badge bg-{{ 'success' if accuracy >= 80 else 'warning' if accuracy >= 60 else 'danger' }}"
+                                        >
+                                            {{ accuracy|round(1) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ session.total_study_time }} min</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line text-muted fs-1 mb-3"></i>
+                        <h5 class="text-muted">No study data yet</h5>
+                        <p class="text-muted">
+                            Start studying with flashcards to see your analytics
+                            here!
+                        </p>
+                        <a
+                            href="{{ url_for('core.dashboard') }}"
+                            class="btn btn-primary"
+                        >
+                            <i class="fas fa-play me-2"></i>Start Studying
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Tips -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Study Tips Based on
+                        Your Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i
+                                    class="fas fa-target text-primary fs-1 mb-2"
+                                ></i>
+                                <h6>Improve Accuracy</h6>
+                                <p class="text-muted small">
+                                    {% if stats.accuracy < 70 %} Review cards
+                                    more thoroughly before marking as correct.
+                                    Take your time! {% elif stats.accuracy < 85
+                                    %} Great progress! Focus on difficult
+                                    concepts to reach 85%+ accuracy. {% else %}
+                                    Excellent accuracy! You're mastering the
+                                    material well. {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i
+                                    class="fas fa-clock text-success fs-1 mb-2"
+                                ></i>
+                                <h6>Study Consistency</h6>
+                                <p class="text-muted small">
+                                    {% if analytics_data|length < 3 %} Try to
+                                    study regularly for better retention. Aim
+                                    for daily practice! {% elif
+                                    analytics_data|length < 7 %} Good study
+                                    frequency! Keep up the regular practice. {%
+                                    else %} Excellent consistency! Regular study
+                                    sessions boost learning. {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i
+                                    class="fas fa-brain text-warning fs-1 mb-2"
+                                ></i>
+                                <h6>Learning Strategy</h6>
+                                <p class="text-muted small">
+                                    {% if stats.total_study_time < 30 %} Spend
+                                    more time reviewing each card. Quality over
+                                    quantity! {% else %} Good study time
+                                    investment. Mix review with new material. {%
+                                    endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_scripts %}
+<script>
+    // Prepare data for charts
+    var analyticsDataJson = "{{ analytics_data|tojson|safe if analytics_data is not none else '{}' }}";
+    var analyticsData = JSON.parse(analyticsDataJson);
+    var statsJson = "{{ stats|tojson|safe if stats is not none else '{}' }}";
+    var stats = JSON.parse(statsJson);
+
+    // Chart configurations
+    Chart.defaults.color = '#fff';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+    // Progress Chart
+    const progressCtx = document.getElementById('progressChart').getContext('2d');
+    const progressChart = new Chart(progressCtx, {
+        type: 'line',
+        data: {
+            labels: analyticsData.slice(-7).map(session =>
+                new Date(session.study_session_date).toLocaleDateString()
+            ),
+            datasets: [{
+                label: 'Cards Studied',
+                data: analyticsData.slice(-7).map(session => session.cards_studied),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4
+            }, {
+                label: 'Correct Answers',
+                data: analyticsData.slice(-7).map(session => session.correct_answers),
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            }
+        }
+    });
+
+    // Accuracy Pie Chart
+    const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+    const accuracyChart = new Chart(accuracyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Correct', 'Incorrect'],
+            datasets: [{
+                data: [stats.total_correct, stats.total_cards_studied - stats.total_correct],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(75, 192, 192)',
+                    'rgb(255, 99, 132)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#fff',
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+
+    // Subject Performance Chart
+    const subjectData = {};
+    analyticsData.forEach(session => {
+        const subject = session.subject || 'General';
+        if (!subjectData[subject]) {
+            subjectData[subject] = { cards: 0, correct: 0 };
+        }
+        subjectData[subject].cards += session.cards_studied;
+        subjectData[subject].correct += session.correct_answers;
+    });
+
+    const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+    const subjectChart = new Chart(subjectCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(subjectData),
+            datasets: [{
+                label: 'Cards Studied',
+                data: Object.values(subjectData).map(data => data.cards),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }, {
+                label: 'Correct Answers',
+                data: Object.values(subjectData).map(data => data.correct),
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

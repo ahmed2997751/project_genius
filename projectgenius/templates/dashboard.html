@@ -1,0 +1,357 @@
+{% extends "base.html" %} {% block title %}Dashboard - EduSense{% endblock %} {%
+block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">
+                        <i class="fas fa-tachometer-alt text-primary me-3"></i>
+                        Welcome back, {{ current_user.username }}!
+                    </h1>
+                    <p class="text-muted">
+                        Manage your notes and study with AI-generated flashcards
+                    </p>
+                </div>
+                <div>
+                    {% if current_user.is_premium %}
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="fas fa-crown me-1"></i>Premium Member
+                    </span>
+                    {% else %}
+                    <a
+                        href="{{ url_for('core.subscription') }}"
+                        class="btn btn-outline-warning"
+                    >
+                        <i class="fas fa-crown me-1"></i>Upgrade to Premium
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {{ stats.enrolled_courses }}
+                            </h4>
+                            <p class="card-text">Courses Enrolled</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-sticky-note fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {{ stats.completed_courses }}
+                            </h4>
+                            <p class="card-text">Courses Completed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-layer-group fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {{ stats.assignments_completed }}
+                            </h4>
+                            <p class="card-text">Assignments Completed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clone fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {% if current_user.is_premium %}
+                                <i class="fas fa-check-circle"></i>
+                                {% else %}
+                                <i class="fas fa-times-circle"></i>
+                                {% endif %}
+                            </h4>
+                            <p class="card-text">Premium Status</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-crown fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-rocket text-primary me-2"></i>Quick
+                        Actions
+                    </h5>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a
+                            href="{{ url_for('core.browse_courses') }}"
+                            class="btn btn-primary"
+                        >
+                            <i class="fas fa-search me-2"></i>Browse Courses
+                        </a>
+                        {% if current_user.is_premium %}
+                        <a
+                            href="{{ url_for('core.analytics') }}"
+                            class="btn btn-info"
+                        >
+                            <i class="fas fa-chart-bar me-2"></i>View Analytics
+                        </a>
+                        {% endif %}
+                        <a
+                            href="{{ url_for('core.subscription') }}"
+                            class="btn btn-outline-warning"
+                        >
+                            <i class="fas fa-crown me-2"></i>Manage Subscription
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button
+                        class="nav-link active"
+                        id="notes-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#notes"
+                        type="button"
+                        role="tab"
+                    >
+                        <i class="fas fa-sticky-note me-2" aria-hidden="true"></i>My Courses ({{
+                        stats.enrolled_courses }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button
+                        class="nav-link"
+                        id="flashcards-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#flashcards"
+                        type="button"
+                        role="tab"
+                    >
+                        <i class="fas fa-layer-group me-2" aria-hidden="true"></i>Recent Activity
+                        ({{ recent_activities|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="dashboardTabsContent">
+                <!-- Notes Tab -->
+                <div
+                    class="tab-pane fade show active"
+                    id="notes"
+                    role="tabpanel"
+                >
+                    <div class="card border-0 border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            {% if enrolled_courses %}
+                            <div class="row">
+                                {% for enrollment in enrolled_courses %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                {{ enrollment.course.title }}
+                                            </h6>
+                                            <span
+                                                class="badge bg-secondary mb-2"
+                                                >{{ enrollment.course.level
+                                                }}</span
+                                            >
+                                            <p
+                                                class="card-text text-muted small"
+                                            >
+                                                {{
+                                                enrollment.course.description[:100]
+                                                }}{% if
+                                                enrollment.course.description|length
+                                                > 100 %}...{% endif %}
+                                            </p>
+                                            <div class="mb-2">
+                                                <div
+                                                    class="progress"
+                                                    style="height: 6px"
+                                                >
+                                                    <div
+                                                        class="progress-bar bg-success"
+                                                        style="width: {{ enrollment.progress|default(0)|round(1) }}%;"
+                                                    ></div>
+                                                </div>
+                                                <small class="text-muted"
+                                                    >{{
+                                                    enrollment.progress|round(1)
+                                                    }}% Complete</small
+                                                >
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="card-footer bg-transparent border-0"
+                                        >
+                                            <div class="d-flex gap-2">
+                                                <a
+                                                    href="{{ url_for('core.course_overview', course_id=enrollment.course.id) }}"
+                                                    class="btn btn-primary btn-sm"
+                                                >
+                                                    <i
+                                                        class="fas fa-play me-1"
+                                                    ></i
+                                                    >Continue Course
+                                                </a>
+                                                <a
+                                                    href="{{ url_for('core.course_modules', course_id=enrollment.course.id) }}"
+                                                    class="btn btn-outline-secondary btn-sm"
+                                                >
+                                                    <i class="fas fa-list"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i
+                                    class="fas fa-graduation-cap text-muted fs-1 mb-3"
+                                ></i>
+                                <h5 class="text-muted">
+                                    No courses enrolled yet
+                                </h5>
+                                <p class="text-muted">
+                                    Browse available courses to start learning!
+                                </p>
+                                <a
+                                    href="{{ url_for('core.browse_courses') }}"
+                                    class="btn btn-primary"
+                                >
+                                    <i class="fas fa-search me-2"></i>Browse
+                                    Courses
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flashcards Tab -->
+                <div class="tab-pane fade" id="flashcards" role="tabpanel">
+                    <div class="card border-0 border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            {% if recent_activities %}
+                            <div class="list-group">
+                                {% for activity in recent_activities %}
+                                <div
+                                    class="list-group-item border-0 border-bottom"
+                                >
+                                    <div
+                                        class="d-flex w-100 justify-content-between"
+                                    >
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if activity.type == 'quiz' %}
+                                                <i
+                                                    class="fas fa-question-circle text-{{ activity.type_color }} fs-5"
+                                                ></i>
+                                                {% elif activity.type ==
+                                                'assignment' %}
+                                                <i
+                                                    class="fas fa-tasks text-{{ activity.type_color }} fs-5"
+                                                ></i>
+                                                {% else %}
+                                                <i
+                                                    class="fas fa-info-circle text-{{ activity.type_color }} fs-5"
+                                                ></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">
+                                                    {{ activity.description }}
+                                                </h6>
+                                                <p
+                                                    class="mb-1 text-muted small"
+                                                >
+                                                    {% if activity.course %}
+                                                    <span
+                                                        class="badge bg-light text-dark"
+                                                        >{{
+                                                        activity.course.title
+                                                        }}</span
+                                                    >
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ activity.created_at.strftime('%b
+                                            %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i
+                                    class="fas fa-history text-muted fs-1 mb-3"
+                                ></i>
+                                <h5 class="text-muted">No recent activity</h5>
+                                <p class="text-muted">
+                                    Your learning activities will appear here
+                                    once you start taking quizzes and submitting
+                                    assignments.
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

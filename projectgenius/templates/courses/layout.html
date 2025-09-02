@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Course Navigation</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}"
+                           href="{{ url_for('courses.overview', course_id=course.id) }}">
+                            <i class="fas fa-home me-2"></i>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'modules' %}active{% endif %}"
+                           href="{{ url_for('courses.modules', course_id=course.id) }}">
+                            <i class="fas fa-book me-2"></i>
+                            Modules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'assignments' %}active{% endif %}"
+                           href="{{ url_for('courses.assignments', course_id=course.id) }}">
+                            <i class="fas fa-tasks me-2"></i>
+                            Assignments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'quizzes' %}active{% endif %}"
+                           href="{{ url_for('courses.quizzes', course_id=course.id) }}">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'grades' %}active{% endif %}"
+                           href="{{ url_for('courses.grades', course_id=course.id) }}">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Grades
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'discussions' %}active{% endif %}"
+                           href="{{ url_for('courses.discussions', course_id=course.id) }}">
+                            <i class="fas fa-comments me-2"></i>
+                            Discussions
+                        </a>
+                    </li>
+                </ul>
+
+                {% if is_instructor %}
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Instructor Tools</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'announcements' %}active{% endif %}"
+                           href="{{ url_for('courses.announcements', course_id=course.id) }}">
+                            <i class="fas fa-bullhorn me-2"></i>
+                            Announcements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'students' %}active{% endif %}"
+                           href="{{ url_for('courses.students', course_id=course.id) }}">
+                            <i class="fas fa-users me-2"></i>
+                            Students
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'analytics' %}active{% endif %}"
+                           href="{{ url_for('courses.analytics', course_id=course.id) }}">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'settings' %}active{% endif %}"
+                           href="{{ url_for('courses.settings', course_id=course.id) }}">
+                            <i class="fas fa-cog me-2"></i>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- Course Progress -->
+                {% if not is_instructor %}
+                <div class="px-3 mt-4">
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center mb-1 text-muted">
+                        <span>Your Progress</span>
+                    </h6>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%"
+                             aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ progress }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {{ completed_modules }}/{{ total_modules }} modules completed
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ course.title }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </div>
+
+            {% block course_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle sidebar on mobile
+    const sidebarToggle = document.querySelector('[data-bs-toggle="sidebar"]');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+    }
+
+    // Handle active links
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}
