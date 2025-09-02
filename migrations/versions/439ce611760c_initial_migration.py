@@ -354,11 +354,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.drop_table('flashcards')
-    op.drop_table('flashcard_sets')
-    op.drop_table('notes')
-    op.drop_table('user_analytics')
-    op.drop_table('payments')
+    
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.add_column(sa.Column('full_name', sa.String(length=120), nullable=True))
         batch_op.add_column(sa.Column('avatar_url', sa.String(length=255), nullable=True))
@@ -400,69 +396,7 @@ def downgrade():
         batch_op.drop_column('avatar_url')
         batch_op.drop_column('full_name')
 
-    op.create_table('payments',
-    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('transaction_id', sa.VARCHAR(length=100), autoincrement=False, nullable=False),
-    sa.Column('amount', sa.DOUBLE_PRECISION(precision=53), autoincrement=False, nullable=False),
-    sa.Column('currency', sa.VARCHAR(length=3), autoincrement=False, nullable=False),
-    sa.Column('status', sa.VARCHAR(length=20), autoincrement=False, nullable=False),
-    sa.Column('payment_method', sa.VARCHAR(length=50), autoincrement=False, nullable=False),
-    sa.Column('subscription_months', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.Column('completed_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('payments_user_id_fkey')),
-    sa.PrimaryKeyConstraint('id', name=op.f('payments_pkey')),
-    sa.UniqueConstraint('transaction_id', name=op.f('payments_transaction_id_key'), postgresql_include=[], postgresql_nulls_not_distinct=False)
-    )
-    op.create_table('user_analytics',
-    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('study_session_date', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.Column('cards_studied', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('correct_answers', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('total_study_time', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('subject', sa.VARCHAR(length=100), autoincrement=False, nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('user_analytics_user_id_fkey')),
-    sa.PrimaryKeyConstraint('id', name=op.f('user_analytics_pkey'))
-    )
-    op.create_table('notes',
-    sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('notes_id_seq'::regclass)"), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('title', sa.VARCHAR(length=200), autoincrement=False, nullable=False),
-    sa.Column('content', sa.TEXT(), autoincrement=False, nullable=False),
-    sa.Column('subject', sa.VARCHAR(length=100), autoincrement=False, nullable=True),
-    sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.Column('updated_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='notes_user_id_fkey'),
-    sa.PrimaryKeyConstraint('id', name='notes_pkey'),
-    postgresql_ignore_search_path=False
-    )
-    op.create_table('flashcard_sets',
-    sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('flashcard_sets_id_seq'::regclass)"), autoincrement=True, nullable=False),
-    sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('note_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('title', sa.VARCHAR(length=200), autoincrement=False, nullable=False),
-    sa.Column('description', sa.TEXT(), autoincrement=False, nullable=True),
-    sa.Column('total_cards', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.ForeignKeyConstraint(['note_id'], ['notes.id'], name='flashcard_sets_note_id_fkey'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='flashcard_sets_user_id_fkey'),
-    sa.PrimaryKeyConstraint('id', name='flashcard_sets_pkey'),
-    postgresql_ignore_search_path=False
-    )
-    op.create_table('flashcards',
-    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-    sa.Column('flashcard_set_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('question', sa.TEXT(), autoincrement=False, nullable=False),
-    sa.Column('answer', sa.TEXT(), autoincrement=False, nullable=False),
-    sa.Column('difficulty_level', sa.VARCHAR(length=20), autoincrement=False, nullable=False),
-    sa.Column('times_reviewed', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('times_correct', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.ForeignKeyConstraint(['flashcard_set_id'], ['flashcard_sets.id'], name=op.f('flashcards_flashcard_set_id_fkey')),
-    sa.PrimaryKeyConstraint('id', name=op.f('flashcards_pkey'))
-    )
+    
     op.drop_table('submission_comments')
     op.drop_table('question_responses')
     op.drop_table('group_members')
